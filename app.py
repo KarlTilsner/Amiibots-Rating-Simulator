@@ -3,6 +3,8 @@ import json
 import random
 import matplotlib.pyplot as plt
 
+
+
 # Set global variables
 mu_initial = 25
 sigma_initial = mu_initial / 3 # 25/3
@@ -13,11 +15,11 @@ draw_initial = 0
 trueskill.setup(mu=mu_initial, sigma=sigma_initial, beta=beta_initial, tau=tau_initial, draw_probability=draw_initial)
 
 # max_points_on_screen = 1000
-simulated_runs = 150
-simulated_rounds = 50 # int(max_points_on_screen / simulated_runs)
+simulated_runs = 25
+simulated_rounds = 100 # int(max_points_on_screen / simulated_runs)
 
 artificial_wr_boost = 1 # 1 = no boost
-simulated_character = 'da8fefbf-43a2-47f5-a5bf-d7dadb4fabdc'
+simulated_character = '81bb935e-51ad-4a35-92e6-9d7565bed6a9'
 simulated_character_name = '???'
 
 
@@ -74,6 +76,8 @@ for x in range(simulated_runs):
     sim_amiibo = trueskill.Rating(mu_initial, sigma_initial)
 
     for i in range(simulated_rounds):
+        won_yet = False
+
         # Matchmaking selection
         all_amiibo = get_amiibo(sim_amiibo.mu, response, trainers) # Call get_amiibo to filter suitable opponents
         random_trainer = random.choice(all_amiibo)
@@ -93,15 +97,22 @@ for x in range(simulated_runs):
         # Determine the winner
         if random.random() < (sim_winrates[random_amiibo['playable_character_id']] * artificial_wr_boost):
             sim_amiibo, sim_opponent = trueskill.rate_1vs1(sim_amiibo, sim_opponent)
+            ratings.append(trueskill.expose(sim_amiibo))
+            won_yet = True
             # Store first match result
             if i == 0: first_round_result.append(1)
         else:
             sim_opponent, sim_amiibo = trueskill.rate_1vs1(sim_opponent, sim_amiibo)
-            if i == 0: first_round_result.append(2)
+            ratings.append(trueskill.expose(sim_amiibo))
+            if i == 0: 
+                first_round_result.append(2)
+
+            if i < 15 & won_yet == False:
+                sim_amiibo = trueskill.Rating(sim_amiibo.mu, sigma_initial)
+                
 
         # Collect rating data for this round
         rounds.append(i + 1)
-        ratings.append(trueskill.expose(sim_amiibo))
 
     sim_runs.append(ratings)
 
@@ -110,7 +121,7 @@ for x in range(simulated_runs):
 
 
 # Set figure size and background color
-plt.figure(figsize=(10, 6), facecolor='#1e1e1e')  # Dark background color
+plt.figure(figsize=(16, 9), facecolor='#1e1e1e')  # Dark background color
 
 # Graph the rating
 for i, plot_rating in enumerate(sim_runs):
