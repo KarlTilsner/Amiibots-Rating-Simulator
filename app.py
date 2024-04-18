@@ -107,6 +107,7 @@ for x in range(simulated_runs):
             if i == 0: 
                 first_round_result.append(2)
 
+            # An attempt to reduce the bias towards amiibo who win their first game
             if i < 15 & won_yet == False:
                 sim_amiibo = trueskill.Rating(sim_amiibo.mu, sigma_initial)
                 
